@@ -49,21 +49,39 @@
 ;;; create range of numbers from ascii value of a to value of z
 ;;; map back to char to get a range of characters a-z
 ;;; we need Aa-Zz so our range shoud be A-z
-(defn char-range [a z] (->>
-(range (int a) (inc (int z)))
-(map char)))
+(defn char-range [a z]
+  (->>
+   (range (int a) (inc (int z)))
+   (map char)))
 
-(char-range \a \z)
+(char-range \a \z) 
+;; => (\a \b \c \d \e \f \g \h \i \j \k \l \m \n \o \p \q \r \s \t \u \v \w \x \y \z)
 (char-range \A \Z)
+;; => (\A \B \C \D \E \F \G \H \I \J \K \L \M \N \O \P \Q \R \S \T \U \V \W \X \Y \Z)
 
 ;;; priorities
 ; range 1-26 = a-z
 ; range 27-52 = A-Z
+(concat (char-range \a \z) (char-range \A \Z))
 (def priorities-a (zipmap (map (comp keyword str) (char-range \a \z)) (range 1 27)))
 (def priorities-b (zipmap (map (comp keyword str) (char-range \A \Z)) (range 27 53)))
 priorities-a
 priorities-b
 (def priorities (merge priorities-a priorities-b)) ;; this is fine since we're using unique keys
+
+;;; two different versions of char-to-key. I find the first more readable. 
+(defn char-to-key [c]
+  (->> c
+       str
+       keyword))
+
+(defn char-to-key* [c]
+  ((comp keyword str) c))
+
+(char-to-key 'a)
+(char-to-key* 'a)
+
+(map char-to-key (char-range \a \z))
 
 (def common-items
   (->>
@@ -75,15 +93,69 @@ priorities-b
 
 (reduce + common-items)
 
+;;;; lets try to clean up/simplify the code
+(defn get-intersection-as-key [bag]
+  (->> bag
+     (map set)
+     (reduce set/intersection)
+     (apply str)
+     keyword))
+
+(defn intersection-priority [k]
+  (priorities k))
+(map get-intersection-as-key compartments)
+
+(->> compartments
+     (map #(map set %)))
+
+
+(set/intersection (set (first (first compartments))) (set (second (first compartments))))
+
+(defn bag-intersection [bag]
+  (let [compartment-a (set (first bag))
+        compartment-b (set (second bag))]
+    ((apply (comp keyword str)
+     (set/intersection compartment-a compartment-b))
+     priorities)))
+
+(map bag-intersection compartments)
 
 
 
 
-(def bag (first compartments))
-bag
+
+
+
+
+
+
+
+(defn string-intersection [a b]
+  (set/intersection (set a) (set b)))
+(string-intersection "jNNBMTNzvT" "qhQLhQLMQL")
+(map (fn [x y] (string-intersection x y)) compartments)
+
+(map (fn [a b] (string-intersection a b)) (first compartments))
+
+(first compartments)
+;; => ("jNNBMTNzvT" "qhQLhQLMQL")
+     
+  (->> intersection-bag
+       (apply str)
+       keyword)
+(map print (map str (partition 2 '(1 2 3 4))))
+(map (fn [a b] (str a " and " b)) (partition 2 1 '(1 2 3 4)))
+
 (def simple-items
   (->> bag
        (map (comp str/join set))))
+
+
+(map #(apply str %) (partition-all 2 '(1 2 3 4)))
+
+
+
+
 
 (->> bag
      first
