@@ -3,30 +3,44 @@
             [clojure.set :as set]
             [clojure.java.io :as io]))
 
-
-(def rucksacks-resource (io/resource "day3"))
-(def rucksacks-input-stream (io/input-stream rucksacks-resource))
-
-(def rucksacks
-  (let [rucksack-resource (io/resource "day3")
-        rucksack-input (io/input-stream rucksack-resource)
-        rucks (slurp rucksack-input)
-        rucks (str/split-lines rucks)]
-    rucks))
-
 ;;; i need to split *each rucksack* into groups of 2 compartments
 (defn into-halves [collection]
   (->>
    (partition (/ (count collection) 2) collection)
-   (map #(apply str %) )))
+   (map #(apply str %))))
 
-(def test-rucks '("vJrwpWtwJgWrhcsFMMfFFhFp"
-"jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL"
-"PmmdzqPrVvPwwTWBwg"
-"wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn"
-"ttgJtRGJQctTZtZT"
-"CrZsJsPPZsGzwwsLwLmpwMDw"))
+(def test-bags '("vJrwpWtwJgWrhcsFMMfFFhFp"
+                 "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL"
+                 "PmmdzqPrVvPwwTWBwg"
+                 "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn"
+                 "ttgJtRGJQctTZtZT"
+                 "CrZsJsPPZsGzwwsLwLmpwMDw"))
 
+(def rucksacks (->> "day3"
+                    io/resource
+                    io/input-stream
+                    slurp
+                    str/split-lines))
+
+;; from here, we need to take each string ("bag/rucksack") and split it into 2
+;; equal halves. Our goal is to find the common character in the two
+;; half-strings.
+
+(def temp-bag (first rucksacks)) ;; => "jNNBMTNzvTqhQLhQLMQL"
+(-> temp-bag
+    count
+    (/ 2)
+    (split-at temp-bag))
+;; => [(\j \N \N \B \M \T \N \z \v \T) (\q \h \Q \L \h \Q \L \M \Q \L)]
+;; above should be the same as partition?
+
+(def a-bag (-> temp-bag
+               count
+               (/ 2)
+               (partition temp-bag)))
+;; => ((\j \N \N \B \M \T \N \z \v \T) (\q \h \Q \L \h \Q \L \M \Q \L))
+
+(apply set/intersection (map set a-bag))
 
 (map into-halves test-rucks)
 (def compartments (map into-halves test-rucks))
@@ -37,12 +51,7 @@
 (first compartments)
 (reduce clojure.set/intersection (first compartments))
 
-
 (map #(reduce intersection %) compartments)
-
-
-
-
 
 (def compartments (map into-halves rucksacks))
 
@@ -54,7 +63,7 @@
    (range (int a) (inc (int z)))
    (map char)))
 
-(char-range \a \z) 
+(char-range \a \z)
 ;; => (\a \b \c \d \e \f \g \h \i \j \k \l \m \n \o \p \q \r \s \t \u \v \w \x \y \z)
 (char-range \A \Z)
 ;; => (\A \B \C \D \E \F \G \H \I \J \K \L \M \N \O \P \Q \R \S \T \U \V \W \X \Y \Z)
@@ -69,7 +78,7 @@ priorities-a
 priorities-b
 (def priorities (merge priorities-a priorities-b)) ;; this is fine since we're using unique keys
 
-;;; two different versions of char-to-key. I find the first more readable. 
+;;; two different versions of char-to-key. I find the first more readable.
 (defn char-to-key [c]
   (->> c
        str
@@ -85,21 +94,21 @@ priorities-b
 
 (def common-items
   (->>
-    (map #(map set %) compartments)
-    (map #(reduce set/intersection %))
-    (map #(apply str %))
-    (map #(keyword %))
-    (map priorities)))
+   (map #(map set %) compartments)
+   (map #(reduce set/intersection %))
+   (map #(apply str %))
+   (map #(keyword %))
+   (map priorities)))
 
 (reduce + common-items)
 
 ;;;; lets try to clean up/simplify the code
 (defn get-intersection-as-key [bag]
   (->> bag
-     (map set)
-     (reduce set/intersection)
-     (apply str)
-     keyword))
+       (map set)
+       (reduce set/intersection)
+       (apply str)
+       keyword))
 
 (defn intersection-priority [k]
   (priorities k))
@@ -108,60 +117,43 @@ priorities-b
 (->> compartments
      (map #(map set %)))
 
-
 (set/intersection (set (first (first compartments))) (set (second (first compartments))))
 
 (defn bag-intersection [bag]
   (let [compartment-a (set (first bag))
         compartment-b (set (second bag))]
     ((apply (comp keyword str)
-     (set/intersection compartment-a compartment-b))
+            (set/intersection compartment-a compartment-b))
      priorities)))
 
 (map bag-intersection compartments)
 
+(comment
+  (defn string-intersection [a b]
+    (set/intersection (set a) (set b)))
+  (string-intersection "jNNBMTNzvT" "qhQLhQLMQL")
+  (map (fn [x y] (string-intersection x y)) compartments)
 
+  (map (fn [a b] (string-intersection a b)) (first compartments))
 
-
-
-
-
-
-
-
-
-(defn string-intersection [a b]
-  (set/intersection (set a) (set b)))
-(string-intersection "jNNBMTNzvT" "qhQLhQLMQL")
-(map (fn [x y] (string-intersection x y)) compartments)
-
-(map (fn [a b] (string-intersection a b)) (first compartments))
-
-(first compartments)
+  (first compartments)
 ;; => ("jNNBMTNzvT" "qhQLhQLMQL")
-     
+
   (->> intersection-bag
        (apply str)
        keyword)
-(map print (map str (partition 2 '(1 2 3 4))))
-(map (fn [a b] (str a " and " b)) (partition 2 1 '(1 2 3 4)))
+  (map print (map str (partition 2 '(1 2 3 4))))
+  (map (fn [a b] (str a " and " b)) (partition 2 1 '(1 2 3 4)))
 
-(def simple-items
+  (def simple-items
+    (->> bag
+         (map (comp str/join set))))
+
+  (map #(apply str %) (partition-all 2 '(1 2 3 4)))
+
   (->> bag
-       (map (comp str/join set))))
+       first
+       set
+       str/join)
 
-
-(map #(apply str %) (partition-all 2 '(1 2 3 4)))
-
-
-
-
-
-(->> bag
-     first
-     set
-     str/join)
-
-    (map (fn [k] (map #(% priorities) k)) ))
-
-
+  (map (fn [k] (map #(% priorities) k))))
