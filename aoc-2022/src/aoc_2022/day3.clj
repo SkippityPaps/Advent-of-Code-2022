@@ -3,24 +3,11 @@
             [clojure.set :as set]
             [clojure.java.io :as io]))
 
-(def test-bags
-  "An example collection of rucksacks provided by day3 prompt."
-  '("vJrwpWtwJgWrhcsFMMfFFhFp"
-    "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL"
-    "PmmdzqPrVvPwwTWBwg"
-    "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn"
-    "ttgJtRGJQctTZtZT"
-    "CrZsJsPPZsGzwwsLwLmpwMDw"))
-
 (def rucksacks (->> "day3"
                     io/resource
                     io/input-stream
                     slurp
                     str/split-lines))
-
-;; from here, we need to take each string ("bag/rucksack") and split it into 2
-;; equal halves. Our goal is to find the common character in the two
-;; half-strings.
 
 (defn partition-bag-into-compartments
   "Return a pair of compartments containing the first and second halves of the
