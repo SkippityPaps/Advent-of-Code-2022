@@ -76,35 +76,14 @@
        (reduce +)))
 
 ;; PART 2
-(def first-three (->>
-                  (take 3 rucksacks)
-                  (map set)))
-(def first-pair
-  ((first first-three) (second first-three)))
-(set/intersection
- (set/intersection (first first-three)
-                   (second first-three))
- (last first-three))
-;; huh. We get \T as the common items between the first three lines. I guess
-;; they really are groups then?
-
-;; alright, lets partition our rucksacks into groups of 3s...
 (def elf-groups
   (partition 3 rucksacks))
-(def groupies (map set (first elf-groups)))
-(apply set/intersection groupies) ;; EASY
-
-(map #((apply set/intersection %)) elf-groups)
-
-(map #(map set %) elf-groups)
 
 (defn find-badge-value [elf-group]
   (->> elf-group
        (map set)
        (apply set/intersection)))
 
-(find-badge-value (first elf-groups))
-
 (def group-badges (mapcat find-badge-value elf-groups))
-group-badges
-(reduce + (map (comp priorities char-to-key) group-badges));; => 2552
+(def group-priorities (map (comp priorities char-to-key) group-badges))
+(reduce + group-priorities);; => 2552
