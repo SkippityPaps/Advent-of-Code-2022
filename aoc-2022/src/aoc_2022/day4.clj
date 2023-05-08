@@ -18,10 +18,6 @@
 (defn irange [start end]
   (range start (inc end)))
 
-(def elf-ranges
-  (map (comp set (partial apply irange))
-       (partition 2 (first raw-elf-ranges))))
-
 (defn elf-ranges-as-sets [both-ranges]
   (->> both-ranges
        (partition 2)
@@ -36,9 +32,9 @@
        (not-every? false?)))
 
 ;; part 1
-(->>
- (map range-in-range? parsed-elf-ranges)
- (filter true?)
- count)
+(->> parsed-elf-ranges
+     (map range-in-range?)
+     (filter true?)
+     count)
 
 ;; part 2
