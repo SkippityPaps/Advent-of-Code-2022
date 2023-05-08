@@ -28,13 +28,30 @@
 (defn range-in-range? [both-ranges]
   (->> both-ranges
        (apply
-        (partial (juxt set/superset? set/subset?)))
+        (juxt set/superset? set/subset?))
        (not-every? false?)))
 
 ;; part 1
+;; is one range fully contained in another given a pair of ranges?
 (->> parsed-elf-ranges
      (map range-in-range?)
      (filter true?)
      count)
 
 ;; part 2
+;; are there any elements of one range in another?
+
+(defn range-overlaps-range? [both-ranges]
+  (->> both-ranges
+       (apply set/intersection)))
+
+(->> parsed-elf-ranges
+     (map range-overlaps-range?)
+     (filter seq)
+     count) ;; => 849
+
+;; simplify the above to the following:
+(->> parsed-elf-ranges
+     (map (partial apply set/intersection))
+     (filter seq)
+     count) ;; => 849
