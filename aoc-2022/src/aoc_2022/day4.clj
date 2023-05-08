@@ -40,17 +40,6 @@
 
 ;; part 2
 ;; are there any elements of one range in another?
-
-(defn range-overlaps-range? [both-ranges]
-  (->> both-ranges
-       (apply set/intersection)))
-
-(->> parsed-elf-ranges
-     (map range-overlaps-range?)
-     (filter seq)
-     count) ;; => 849
-
-;; simplify the above to the following:
 (->> parsed-elf-ranges
      (map (partial apply set/intersection))
      (filter seq)
