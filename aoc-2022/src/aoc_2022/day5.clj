@@ -33,7 +33,6 @@
 ;; and we can use (range) instead of doing the whole crate-indices thing.
 ;; reading the input saves me from potential typos though like 0-based indexing
 ;; while the crates are using 1-based...
-
 ;; can we zipmap an assoc with some sort of comp seq/range magic?
 (first crates)
 ;; ok first we need to extract the characters from between the brackets
@@ -43,7 +42,19 @@
 (->> crates
      first
      (partition 4)
-     (map second))
+     (map second)) ;; failing to capture last crate input for some reason.
+;; oh because im not using partition-all and there's only 3 characters in the
+;; last group. replacing (partition 4) with (partition-all 4) should fix it.
+(->> crates
+     first
+     (partition-all 4)
+     (map second)) ;; yep. fixed.
+;; i think i prefer partition n step col form of this though
+(->> crates
+     first
+     (partition 2 4)
+     (map last))
+
 ;; partitining by 4 we can just consume the spaces. The second character of every 4
 ;; characters would be the crate contents.
 ;; [ a ] \space [ b ] \space [ \space  ]. empty crates replace brackets with spaces
@@ -54,13 +65,6 @@
 ;; [ b ] \space
 ;; [ \space ]
 ;; every second: a b \space
-
-(re-seq #"\w+" (apply str (last buckets)))
-;; and we can now clean this up by creating a map of sequence and its index
-(zipmap (map second buckets)
-        (->> buckets
-             count
-             range))
-;; => (0 1 2 3 4 5 6 7 8)
-
-(concat [\Z] [\G] [\V] [\V] [\Q] [\M] [\L] [\N] [\R])
+(map second (partition 4 (first crates)))
+(map last (partition 2 4 (first crates)))
+(concat [\space] [] [\V] [\V] [\Q] [\M] [\L] [\N] [\R])
