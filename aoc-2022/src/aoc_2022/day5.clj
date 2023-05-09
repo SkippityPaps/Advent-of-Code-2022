@@ -29,25 +29,31 @@
   (->>
    (re-seq #"\d+" (last crates))
    (map read-string)))
+;; note that we would also know the number of crates from the length of string
+;; and we can use (range) instead of doing the whole crate-indices thing.
+;; reading the input saves me from potential typos though like 0-based indexing
+;; while the crates are using 1-based...
 
-(filter (comp not str/blank?)
-        (map str
-             (map last (partition 2 "[Z] [G] [V] [V] [Q] [M] [L] [N] [R]"))))
-;; we could always strip away the brackets if we just reseq for chars...
-(re-seq #"\w+" "[Z] [G] [V] [V] [Q] [M] [L] [N] [R]")
-;; => ("Z" "G" "V" "V" "Q" "M" "L" "N" "R")
-;; this doesnt work for whitespace though
-;; "                    [L]     [H] [W]"
-(re-seq #"\w+" "                    [L]     [H] [W]")
-;; we dont know the index of any of the three buckets by doing this.
-;; we know that a bucket in string is 3 characters large so we could
-;; also try partitioning by 3 and skipping 1 (whitespace)
-(def buckets (partition-all 4 "                    [L]     [H] [W]"))
-;; => ((\space \space \space \space) (\space \space \space \space) (\space \space \space \space) (\space \space \space \space) (\space \space \space \space) (\[ \L \] \space) (\space \space \space \space) (\[ \H \] \space) (\[ \W \]))
-;; lets clean this up by
-
-;; we could also just take every other character from the character sequence (string) which would give us letter, \space, letter, \space, etc...
-(reduce (fn [_ x] x) "                    [L]     [H] [W]")
+;; can we zipmap an assoc with some sort of comp seq/range magic?
+(first crates)
+;; ok first we need to extract the characters from between the brackets
+(map last (partition 2 (first crates)))
+;; roughly double what we want because we dont filter out the \space delimiters
+;; between crates..
+(->> crates
+     first
+     (partition 4)
+     (map second))
+;; partitining by 4 we can just consume the spaces. The second character of every 4
+;; characters would be the crate contents.
+;; [ a ] \space [ b ] \space [ \space  ]. empty crates replace brackets with spaces
+;; so
+;; [ a ] \space [ b ] \space \space \space \space
+;; stride by 4
+;; [ a ] \space
+;; [ b ] \space
+;; [ \space ]
+;; every second: a b \space
 
 (re-seq #"\w+" (apply str (last buckets)))
 ;; and we can now clean this up by creating a map of sequence and its index
